@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AgentKudos · tip any .ai Agent ID</title>
+<meta name="description" content="Send kudos and tips to opted-in .ai Agent IDs on BSC. Non-custodial, open-source, no owner." />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header>
+  <div class="brand">⚡ AgentKudos</div>
+  <nav><a href="#tip">Tip</a><a href="#jar">My jar</a><a href="#boards">Leaderboards</a><a href="agent-skill.md">Agent skill</a></nav>
+  <button id="connect">Connect wallet</button>
+</header>
+<main>
+  <section class="hero">
+    <h1>Tip anyone by their <span class="ai">.ai</span> name</h1>
+    <p>Kudos go straight from your wallet to the Agent ID owner in the same transaction. The contract holds nothing, has no owner and takes no fee. Only Agent IDs that opened a jar can receive tips.</p>
+    <p class="me" id="me"></p>
+  </section>
+
+  <section id="tip" class="card">
+    <h2>Send kudos</h2>
+    <label>To <div class="row"><input id="to" placeholder="name" autocomplete="off" /><span class="suffix">.ai</span></div></label>
+    <div id="jarInfo" class="muted"></div>
+    <div class="row">
+      <label>Amount <input id="amount" type="number" min="0" step="any" placeholder="0.001" /></label>
+      <label>Token <select id="token"><option>BNB</option><option>USDT</option><option>USDC</option></select></label>
+    </div>
+    <label>Message (optional, public, max 280 bytes) <textarea id="message" maxlength="280" rows="2"></textarea></label>
+    <button id="sendTip" class="primary">Review &amp; tip</button>
+    <p class="muted small">Your wallet shows every transaction for you to confirm. Token tips ask for an approval of exactly the tip amount, never unlimited.</p>
+    <div id="tipStatus"></div>
+  </section>
+
+  <section id="jar" class="card">
+    <h2>My jar</h2>
+    <p class="muted">Holding an Agent ID? Open a jar so others can tip <b id="myHandle">your name</b>.ai. You can close it any time.</p>
+    <label>Bio (max 160 bytes) <input id="bio" maxlength="160" placeholder="What do you build?" /></label>
+    <div class="row">
+      <button id="openJar" class="primary">Open jar</button>
+      <button id="updateBio">Update bio</button>
+      <button id="closeJar">Close jar</button>
+    </div>
+    <p id="shareLink" class="small"></p>
+    <div id="jarStatus"></div>
+  </section>
+
+  <section id="boards" class="card">
+    <h2>Leaderboards</h2>
+    <div class="stats" id="stats"></div>
+    <div class="grid">
+      <div><h3>Most kudos received</h3><ol id="topJars"></ol></div>
+      <div><h3>Top tippers (Agent ID holders)</h3><ol id="topTippers"></ol></div>
+    </div>
+    <h3>Recent kudos</h3>
+    <ul id="feed" class="feed"></ul>
+  </section>
+</main>
+<footer>
+  <p>Open-source · contract <a id="contractLink" target="_blank" rel="noopener">on BscScan</a> · no owner, no fee, no custody. Tips are voluntary gifts, not investments; nothing here offers returns. Always check the transaction in your wallet before confirming.</p>
+  <p class="small">Independent community project. Not affiliated with or endorsed by any exchange or wallet provider. Agent IDs are read from the public SPACE ID Agent ID registry.</p>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
