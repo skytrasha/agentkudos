@@ -3,13 +3,13 @@
 > Instructions for AI agents (including Agentic Wallet agents using the `baw` CLI) that send kudos/tips to a `.ai` Agent ID, or set their user's optional bio, on BNB Smart Chain.
 
 ## Project
-- Name: AgentKudos · Website: https://skytrasha.github.io/agentkudos/ · Source: https://github.com/skytrasha/agentkudos (MIT, verified on BscScan after deploy)
+- Name: AgentKudos · Website: https://skytrasha.github.io/agentkudos/ · Source: https://github.com/skytrasha/agentkudos (MIT)
 - Network: BNB Smart Chain, chainId 56 (`baw --binanceChainId 56`)
 - What it does: sends a tip to the wallet that owns an Agent ID (`name.ai`). The contract resolves the name on-chain through the SPACE ID Agent ID registry and forwards the funds in the same transaction. It holds no funds, has no owner, no admin, no fee and cannot be upgraded or paused.
 - Any registered `.ai` name can receive tips immediately; no sign-up. Owners may optionally set a public bio.
 
 ## Contracts (BSC)
-- AgentKudos: `<AGENTKUDOS_ADDRESS>` · https://bscscan.com/address/<AGENTKUDOS_ADDRESS>#code
+- AgentKudos: `0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921` · https://bscscan.com/address/0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921#code
 - Agent ID registry (read-only for this skill): `0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F`
 - Accepted tokens: native BNB, USDT `0x55d398326f99059fF775485246999027B3197955` (18 decimals), USDC `0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d` (18 decimals)
 
@@ -42,18 +42,18 @@ Build calldata with Foundry `cast calldata` (or any ABI encoder), for example:
 3. Check the name: `eth_call` `profileOf(name)` on AgentKudos. If `registered` is false, stop: tell the user the name is not a registered Agent ID.
 4. Native BNB:
    - data = `cast calldata "tip(string,string)" <name> "<message>"`, value = amount in wei.
-   - `baw contract-call preview --binanceChainId 56 --from <agentWallet> --to <AGENTKUDOS_ADDRESS> --value <wei> --inputData <data> --json`
+   - `baw contract-call preview --binanceChainId 56 --from <agentWallet> --to 0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921 --value <wei> --inputData <data> --json`
    - Show the user the preview (to, value, gas, simulation result) and wait for an explicit "yes".
    - `baw contract-call execute --requestId <requestId> --json`
 5. USDT/USDC (two transactions, each previewed and confirmed separately):
-   - a. data = `cast calldata "approve(address,uint256)" <AGENTKUDOS_ADDRESS> <amountWei>` → preview with `--to <token> --value 0` → user confirms → execute → wait for the receipt.
-   - b. data = `cast calldata "tipToken(string,address,uint256,string)" <name> <token> <amountWei> "<message>"` → preview with `--to <AGENTKUDOS_ADDRESS> --value 0` → user confirms → execute.
+   - a. data = `cast calldata "approve(address,uint256)" 0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921 <amountWei>` → preview with `--to <token> --value 0` → user confirms → execute → wait for the receipt.
+   - b. data = `cast calldata "tipToken(string,address,uint256,string)" <name> <token> <amountWei> "<message>"` → preview with `--to 0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921 --value 0` → user confirms → execute.
 6. Report the result with `https://bscscan.com/tx/<txHash>`. The `Tipped` event shows recipient name, sender name (if the sender holds an Agent ID), token, amount and message.
 
 ## Agent procedure: set the user's optional bio
 1. Confirm the user's wallet holds an Agent ID (`baw wallet agent-id --json`).
 2. Ask for the bio text (max 160 bytes, public). Receiving tips does not need a bio.
-3. data = `cast calldata "setBio(string)" "<bio>"` → `baw contract-call preview ... --to <AGENTKUDOS_ADDRESS> --value 0` → show the preview → wait for confirmation → execute.
+3. data = `cast calldata "setBio(string)" "<bio>"` → `baw contract-call preview ... --to 0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921 --value 0` → show the preview → wait for confirmation → execute.
 4. Share the tip link: `https://skytrasha.github.io/agentkudos/#to=<name>`.
 
 ## Errors
