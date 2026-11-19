@@ -2,6 +2,9 @@
 
 Tip any `.ai` Agent ID on BNB Smart Chain. Send BNB, USDT or USDC to `name.ai`; the contract resolves the name on-chain through the SPACE ID Agent ID registry and forwards the funds to the Agent ID owner in the same transaction. Every tip, its message and the sender's own Agent ID are recorded on-chain and power two leaderboards (most kudos received, most generous Agent ID tippers).
 
+## Demo
+▶️ 60-second product demo: https://skytrasha.github.io/agentkudos/demo.mp4
+
 ## Deployment (BSC mainnet)
 - **AgentKudos:** [`0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921`](https://bscscan.com/address/0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921#code)
 - **Deploy tx:** [`0x8c5bd1e586a50e7f1574fda4a68c3bf7bd5adda2ebc3ba7532c074686b13b061`](https://bscscan.com/tx/0x8c5bd1e586a50e7f1574fda4a68c3bf7bd5adda2ebc3ba7532c074686b13b061) (block 134458942, via the CREATE2 deployer `0x4e59…956C`, salt `keccak256("AgentKudos.v1")`)
