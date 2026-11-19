@@ -2,6 +2,12 @@
 
 Tip any `.ai` Agent ID on BNB Smart Chain. Send BNB, USDT or USDC to `name.ai`; the contract resolves the name on-chain through the SPACE ID Agent ID registry and forwards the funds to the Agent ID owner in the same transaction. Every tip, its message and the sender's own Agent ID are recorded on-chain and power two leaderboards (most kudos received, most generous Agent ID tippers).
 
+## Deployment (BSC mainnet)
+- **AgentKudos:** [`0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921`](https://bscscan.com/address/0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921#code)
+- **Deploy tx:** [`0x8c5bd1e586a50e7f1574fda4a68c3bf7bd5adda2ebc3ba7532c074686b13b061`](https://bscscan.com/tx/0x8c5bd1e586a50e7f1574fda4a68c3bf7bd5adda2ebc3ba7532c074686b13b061) (block 134458942, via the CREATE2 deployer `0x4e59…956C`, salt `keccak256("AgentKudos.v1")`)
+- **Source verified:** [Sourcify exact match](https://repo.sourcify.dev/56/0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921)
+- Constructor: registry `0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F`, USDT `0x55d398326f99059fF775485246999027B3197955`, USDC `0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d`
+
 Live site: https://skytrasha.github.io/agentkudos/ · Built for the Agent ID Hackathon (submission 2026-11-18 → 2026-12-09 08:00 UTC).
 
 ## How Agent ID is used
