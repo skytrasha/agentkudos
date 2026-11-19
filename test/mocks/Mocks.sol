@@ -32,16 +32,10 @@ contract MockToken is ERC20 {
     function mint(address to, uint256 a) external { _mint(to, a); }
 }
 
-contract Rejecter {
-    function openJar(address kudos, string calldata bio) external {
-        (bool ok,) = kudos.call(abi.encodeWithSignature("openJar(string)", bio));
-        require(ok);
-    }
-}
+contract Rejecter {}
 
 interface IKudos {
     function tip(string calldata, string calldata) external payable;
-    function openJar(string calldata) external;
 }
 
 contract Reenterer {
@@ -49,7 +43,6 @@ contract Reenterer {
     string public target;
     bool public reentered;
     constructor(IKudos k_) { k = k_; }
-    function open() external { k.openJar(""); }
     function setTarget(string calldata t) external { target = t; }
     receive() external payable {
         // try to re-enter while the outer tip is still executing

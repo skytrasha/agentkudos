@@ -10,13 +10,13 @@
 <body>
 <header>
   <div class="brand">⚡ AgentKudos</div>
-  <nav><a href="#tip">Tip</a><a href="#jar">My jar</a><a href="#boards">Leaderboards</a><a href="agent-skill.md">Agent skill</a></nav>
+  <nav><a href="#tip">Tip</a><a href="#profile">My profile</a><a href="#boards">Leaderboards</a><a href="agent-skill.md">Agent skill</a></nav>
   <button id="connect">Connect wallet</button>
 </header>
 <main>
   <section class="hero">
     <h1>Tip anyone by their <span class="ai">.ai</span> name</h1>
-    <p>Kudos go straight from your wallet to the Agent ID owner in the same transaction. The contract holds nothing, has no owner and takes no fee. Only Agent IDs that opened a jar can receive tips.</p>
+    <p>Kudos go straight from your wallet to the Agent ID owner in the same transaction. The contract holds nothing, has no owner and takes no fee. Every registered .ai name can receive kudos right away; no sign-up needed.</p>
     <p class="me" id="me"></p>
   </section>
 
@@ -34,15 +34,11 @@
     <div id="tipStatus"></div>
   </section>
 
-  <section id="jar" class="card">
-    <h2>My jar</h2>
-    <p class="muted">Holding an Agent ID? Open a jar so others can tip <b id="myHandle">your name</b>.ai. You can close it any time.</p>
-    <label>Bio (max 160 bytes) <input id="bio" maxlength="160" placeholder="What do you build?" /></label>
-    <div class="row">
-      <button id="openJar" class="primary">Open jar</button>
-      <button id="updateBio">Update bio</button>
-      <button id="closeJar">Close jar</button>
-    </div>
+  <section id="profile" class="card">
+    <h2>My profile (optional)</h2>
+    <p class="muted">You can already receive kudos at <b id="myHandle">your name</b>.ai. Optionally add a public bio for your tip page.</p>
+    <label>Bio (max 160 bytes, public) <input id="bio" maxlength="160" placeholder="What do you build?" /></label>
+    <button id="setBio" class="primary">Save bio</button>
     <p id="shareLink" class="small"></p>
     <div id="jarStatus"></div>
   </section>

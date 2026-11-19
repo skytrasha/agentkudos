@@ -6,12 +6,11 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IAgentIdRegistry} from "./interfaces/IAgentIdRegistry.sol";
 
-/// @title AgentKudos - tip any opted-in .ai Agent ID by name
-/// @notice Non-custodial: every tip is forwarded to the recipient's Agent ID owner address in the
-/// same transaction. This contract never holds user funds, has no owner, no admin, no fee,
-/// no pause and no upgrade path. All configuration is immutable and set in the constructor.
-/// @dev Recipients must opt in with `openJar()` from the wallet that owns their Agent ID, so the
-/// contract cannot be used to pay (or look up) Agent IDs whose owners did not ask for it.
+/// @title AgentKudos - tip any .ai Agent ID by name
+/// @notice Non-custodial: every tip is forwarded to the wallet that owns the Agent ID in the same
+/// transaction. This contract never holds user funds, has no owner, no admin, no fee, no pause and
+/// no upgrade path. All configuration is immutable and set in the constructor.
+/// @dev Any registered handle can receive tips. An optional public bio can be set by the handle owner.
 contract AgentKudos is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -21,41 +20,33 @@ contract AgentKudos is ReentrancyGuard {
     uint256 public constant MAX_BIO_BYTES = 160;
 
     IAgentIdRegistry public immutable registry;
-    /// @notice ERC20 tokens accepted for tips (fixed at deployment; e.g. USDT, USDC on BSC).
+    /// @notice ERC20 tokens accepted for tips (fixed at deployment; USDT and USDC on BSC).
     address public immutable tokenA;
     address public immutable tokenB;
 
-    struct Jar {
-        bool open;
-        address owner; // Agent ID owner at the time the jar was opened (Agent IDs are soulbound)
-        uint64 openedAt;
-        uint32 tipsReceived;
-        string bio;
-    }
-
-    /// @notice labelhash (keccak256 of the handle without ".ai") => jar
-    mapping(bytes32 => Jar) internal _jars;
+    /// @notice labelhash (keccak256 of the handle without ".ai") => optional bio
+    mapping(bytes32 => string) public bioOf;
+    /// @notice labelhash => number of tips received
+    mapping(bytes32 => uint32) public tipsReceived;
     /// @notice labelhash => token => total received
     mapping(bytes32 => mapping(address => uint256)) public received;
     /// @notice tipper => token => total sent
     mapping(address => mapping(address => uint256)) public sent;
     /// @notice tipper => number of tips sent
     mapping(address => uint32) public tipsSent;
-    /// @notice tipper => number of distinct jars tipped
+    /// @notice tipper => number of distinct names tipped
     mapping(address => uint32) public uniqueRecipients;
     mapping(address => mapping(bytes32 => bool)) internal _hasTipped;
 
     uint256 public totalTips;
-    uint256 public totalJars;
 
     /// @notice Enumerable lists for on-chain leaderboards (no indexer needed).
-    bytes32[] public jarLabels;
+    bytes32[] public recipientLabels; // names that received at least one tip
     mapping(bytes32 => string) public handleOfLabel;
     address[] public tippers;
 
-    struct JarView {
+    struct RecipientView {
         string handle;
-        bool open;
         uint32 tipsReceived;
         uint256 receivedNative;
         uint256 receivedTokenA;
@@ -72,9 +63,7 @@ contract AgentKudos is ReentrancyGuard {
         uint256 sentTokenB;
     }
 
-    event JarOpened(bytes32 indexed labelhash, address indexed owner, string handle, string bio);
-    event JarUpdated(bytes32 indexed labelhash, string bio);
-    event JarClosed(bytes32 indexed labelhash);
+    event BioSet(bytes32 indexed labelhash, string handle, string bio);
     /// @param fromHandle tipper's own Agent ID handle ("" if the tipper holds none)
     event Tipped(
         bytes32 indexed labelhash,
@@ -88,15 +77,13 @@ contract AgentKudos is ReentrancyGuard {
     );
 
     error NoAgentId();
-    error JarNotOpen();
-    error JarAlreadyOpen();
+    error UnknownHandle();
     error SelfTip();
     error ZeroAmount();
     error TokenNotAccepted();
     error MessageTooLong();
     error BioTooLong();
     error ForwardFailed();
-    error StaleJar();
 
     constructor(IAgentIdRegistry registry_, address tokenA_, address tokenB_) {
         registry = registry_;
@@ -104,45 +91,22 @@ contract AgentKudos is ReentrancyGuard {
         tokenB = tokenB_;
     }
 
-    // ---------------------------------------------------------------- recipients
+    // ---------------------------------------------------------------- optional profile
 
-    /// @notice Opt in to receive tips at your .ai name. Caller must own an Agent ID.
-    function openJar(string calldata bio) external {
+    /// @notice Optional: set a public bio shown on your tip page. Caller must own an Agent ID.
+    /// Not required to receive tips. Pass "" to clear it.
+    function setBio(string calldata bio) external {
         if (bytes(bio).length > MAX_BIO_BYTES) revert BioTooLong();
         string memory handle = registry.handleOf(msg.sender);
         if (bytes(handle).length == 0) revert NoAgentId();
         bytes32 label = keccak256(bytes(handle));
-        Jar storage j = _jars[label];
-        if (j.open) revert JarAlreadyOpen();
-        if (j.openedAt == 0) {
-            totalJars++;
-            jarLabels.push(label);
-            handleOfLabel[label] = handle;
-        }
-        j.open = true;
-        j.owner = msg.sender;
-        j.openedAt = uint64(block.timestamp);
-        j.bio = bio;
-        emit JarOpened(label, msg.sender, handle, bio);
-    }
-
-    function updateBio(string calldata bio) external {
-        if (bytes(bio).length > MAX_BIO_BYTES) revert BioTooLong();
-        bytes32 label = _ownLabel();
-        _jars[label].bio = bio;
-        emit JarUpdated(label, bio);
-    }
-
-    /// @notice Stop receiving tips. History and totals are kept.
-    function closeJar() external {
-        bytes32 label = _ownLabel();
-        _jars[label].open = false;
-        emit JarClosed(label);
+        bioOf[label] = bio;
+        emit BioSet(label, handle, bio);
     }
 
     // ---------------------------------------------------------------- tipping
 
-    /// @notice Tip native BNB-chain coin to `handle` (without ".ai"). Forwarded immediately.
+    /// @notice Tip native coin to `handle` (without ".ai"). Forwarded immediately to its owner.
     function tip(string calldata handle, string calldata message) external payable nonReentrant {
         if (msg.value == 0) revert ZeroAmount();
         (bytes32 label, address to) = _prepare(handle, message);
@@ -166,32 +130,34 @@ contract AgentKudos is ReentrancyGuard {
 
     // ---------------------------------------------------------------- views
 
-    function jarOf(string calldata handle)
+    /// @notice Public tip-page info for a name. Deliberately does not return the owner address.
+    function profileOf(string calldata handle)
         external
         view
-        returns (bool open, uint64 openedAt, uint32 tipsReceived, string memory bio)
+        returns (bool registered, uint32 tips, string memory bio)
     {
-        Jar storage j = _jars[keccak256(bytes(handle))];
-        // A jar is only live while its opener still owns the handle (always true for soulbound IDs).
-        bool live = j.open && registry.ownerOfHandle(handle) == j.owner;
-        return (live, j.openedAt, j.tipsReceived, j.bio);
+        bytes32 label = keccak256(bytes(handle));
+        return (registry.ownerOfHandle(handle) != address(0), tipsReceived[label], bioOf[label]);
+    }
+
+    function recipientCount() external view returns (uint256) {
+        return recipientLabels.length;
     }
 
     function tipperCount() external view returns (uint256) {
         return tippers.length;
     }
 
-    /// @notice Paginated jar stats for leaderboards.
-    function getJars(uint256 start, uint256 count) external view returns (JarView[] memory out) {
-        uint256 n = jarLabels.length;
+    /// @notice Paginated recipient stats for leaderboards.
+    function getRecipients(uint256 start, uint256 count) external view returns (RecipientView[] memory out) {
+        uint256 n = recipientLabels.length;
         if (start >= n) return out;
         if (count > n - start) count = n - start;
-        out = new JarView[](count);
+        out = new RecipientView[](count);
         for (uint256 i; i < count; ++i) {
-            bytes32 l = jarLabels[start + i];
-            Jar storage j = _jars[l];
-            out[i] = JarView(
-                handleOfLabel[l], j.open, j.tipsReceived, received[l][NATIVE], received[l][tokenA], received[l][tokenB]
+            bytes32 l = recipientLabels[start + i];
+            out[i] = RecipientView(
+                handleOfLabel[l], tipsReceived[l], received[l][NATIVE], received[l][tokenA], received[l][tokenB]
             );
         }
     }
@@ -216,31 +182,24 @@ contract AgentKudos is ReentrancyGuard {
 
     // ---------------------------------------------------------------- internal
 
-    function _ownLabel() internal view returns (bytes32 label) {
-        string memory handle = registry.handleOf(msg.sender);
-        if (bytes(handle).length == 0) revert NoAgentId();
-        label = keccak256(bytes(handle));
-        Jar storage j = _jars[label];
-        if (!j.open || j.owner != msg.sender) revert JarNotOpen();
-    }
-
     function _prepare(string calldata handle, string calldata message) internal view returns (bytes32 label, address to) {
         if (bytes(message).length > MAX_MESSAGE_BYTES) revert MessageTooLong();
         label = keccak256(bytes(handle));
-        Jar storage j = _jars[label];
-        if (!j.open) revert JarNotOpen();
         to = registry.ownerOfHandle(handle); // resolved on-chain at tip time
-        if (to == address(0) || to != j.owner) revert StaleJar();
+        if (to == address(0)) revert UnknownHandle();
         if (to == msg.sender) revert SelfTip();
     }
 
     function _record(bytes32 label, address to, address token, uint256 amount, string calldata handle, string calldata message)
         internal
     {
-        Jar storage j = _jars[label];
+        if (tipsReceived[label] == 0) {
+            recipientLabels.push(label);
+            handleOfLabel[label] = handle;
+        }
         if (tipsSent[msg.sender] == 0) tippers.push(msg.sender);
         unchecked {
-            j.tipsReceived++;
+            tipsReceived[label]++;
             tipsSent[msg.sender]++;
             totalTips++;
         }

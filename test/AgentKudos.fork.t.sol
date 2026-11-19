@@ -36,9 +36,7 @@ contract AgentKudosForkTest is Test {
         assertFalse(k.isAgentIdHolder(address(0xdead)));
     }
 
-    function test_fork_openAndTipNative() public {
-        vm.prank(IKYYY);
-        k.openJar("builder");
+    function test_fork_tipNativeWithoutOptIn() public {
         uint256 before = IKYYY.balance;
         vm.deal(SKYARTS, 1 ether);
         vm.prank(SKYARTS);
@@ -49,8 +47,6 @@ contract AgentKudosForkTest is Test {
     }
 
     function test_fork_tipUsdtExactApproval() public {
-        vm.prank(AZKAJEF);
-        k.openJar("");
         deal(USDT, GGGAMING, 10e18);
         uint256 before = IERC20(USDT).balanceOf(AZKAJEF);
         vm.startPrank(GGGAMING);
@@ -62,9 +58,21 @@ contract AgentKudosForkTest is Test {
         assertEq(IERC20(USDT).balanceOf(address(k)), 0);
     }
 
-    function test_fork_nonHolderCannotOpen() public {
+    function test_fork_unregisteredHandleReverts() public {
+        vm.deal(SKYARTS, 1 ether);
+        vm.prank(SKYARTS);
+        vm.expectRevert(AgentKudos.UnknownHandle.selector);
+        k.tip{value: 1}("zzqqxx9871234", "");
+    }
+
+    function test_fork_bioAndProfile() public {
+        vm.prank(GGGAMING);
+        k.setBio("gaming");
+        (bool registered,, string memory bio) = k.profileOf("gggaming");
+        assertTrue(registered);
+        assertEq(bio, "gaming");
         vm.prank(address(0xBEEF));
         vm.expectRevert(AgentKudos.NoAgentId.selector);
-        k.openJar("");
+        k.setBio("x");
     }
 }

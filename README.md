@@ -2,10 +2,10 @@
 
 Tip any `.ai` Agent ID on BNB Smart Chain. Send BNB, USDT or USDC to `name.ai`; the contract resolves the name on-chain through the SPACE ID Agent ID registry and forwards the funds to the Agent ID owner in the same transaction. Every tip, its message and the sender's own Agent ID are recorded on-chain and power two leaderboards (most kudos received, most generous Agent ID tippers).
 
-Built for the Agent ID Hackathon (submission 2026-11-18 → 2026-12-09 08:00 UTC).
+Live site: https://skytrasha.github.io/agentkudos/ · Built for the Agent ID Hackathon (submission 2026-11-18 → 2026-12-09 08:00 UTC).
 
 ## How Agent ID is used
-- **Identity / opt-in:** only an address that owns an Agent ID can open a jar (`registry.handleOf(msg.sender)`), and the jar is keyed by the name's labelhash.
+- **No sign-up:** every registered `.ai` name can receive tips immediately. Owners can optionally set a public bio (`setBio`, requires `registry.handleOf(msg.sender)`).
 - **Payments by name:** `tip("alice", msg)` resolves `registry.ownerOfHandle("alice")` at tip time and pays that address. No address book, no copy-pasting hex addresses.
 - **Reputation:** each `Tipped` event carries the sender's own handle; on-chain counters give per-name totals, per-tipper totals and distinct recipients.
 - **Agent-native:** `web/agent-skill.md` lets Agentic Wallet agents tip via `baw contract-call preview/execute` with user confirmation on every transaction.
@@ -19,11 +19,10 @@ Built for the Agent ID Hackathon (submission 2026-11-18 → 2026-12-09 08:00 UTC
 ## Contract: `src/AgentKudos.sol`
 | Function | Who | Effect |
 |---|---|---|
-| `openJar(bio)` | Agent ID owner | opt in to receive tips |
-| `updateBio(bio)` / `closeJar()` | jar owner | edit / stop receiving |
+| `setBio(bio)` | Agent ID owner | optional public bio (not needed to receive) |
 | `tip(handle, message)` payable | anyone | forwards `msg.value` to the name owner |
 | `tipToken(handle, token, amount, message)` | anyone | `transferFrom(sender → name owner, amount)`; USDT/USDC only |
-| `jarOf`, `getJars`, `getTippers`, `received`, `sent`, … | view | leaderboards from storage |
+| `profileOf`, `getRecipients`, `getTippers`, `received`, `sent`, … | view | tip page + leaderboards from storage; `profileOf` never returns an address |
 
 Constructor (immutable): registry `0x60B9…022F`, USDT `0x55d3…7955`, USDC `0x8AC7…580d`.
 
@@ -32,7 +31,7 @@ Constructor (immutable): registry `0x60B9…022F`, USDT `0x55d3…7955`, USDC `0
 - No function can withdraw or move user funds. The contract has no `receive`/`fallback`, and funds are never held: native tips are forwarded in the same call, and tokens go directly from the tipper to the recipient.
 - Token approvals: the UI and agent skill request **exactly** the tip amount; the contract only pulls `amount`.
 - Reentrancy: `nonReentrant` on both tip paths, state updated before external calls.
-- Dependency note: the SPACE ID registry has its own owner (it can register handles via `adminRegister` and set its signer); it cannot transfer existing handles (soulbound). If an owner changed, `StaleJar` blocks tips.
+- Dependency note: the SPACE ID registry has its own owner (it can register handles via `adminRegister` and set its signer); it cannot transfer existing handles (soulbound). Tips always go to `ownerOfHandle` at tip time; unregistered names revert with `UnknownHandle`.
 
 ## Safety red lines (hackathon rules)
 | Rule | How AgentKudos complies |
@@ -45,7 +44,7 @@ Constructor (immutable): registry `0x60B9…022F`, USDT `0x55d3…7955`, USDC `0
 | No brand impersonation | Name "AgentKudos"; no "Binance"/"BNB" in name or domain. Footer states it is independent. |
 | No credential collection | Never asks for seeds, keys, API secrets or pairing codes. |
 | No promised returns | Tips are gifts; UI says nothing offers returns. |
-| Not a "look up wallets by name" tool | Opt-in jars only; UI never displays a recipient's address. |
+| Not a "look up wallets by name" tool | Purpose is paying a name, not revealing it: the UI and `profileOf` never display or return a recipient's address, and the agent skill forbids reporting it. |
 
 ## Develop
 ```bash
@@ -57,3 +56,5 @@ cd web && python3 -m http.server 8080                        # frontend
 
 ## Deploy
 Deterministic via the canonical CREATE2 deployer `0x4e59b44847b379578588920cA78FbF26c0B4956C` with salt `keccak256("AgentKudos.v1")`, so it can be deployed either by an Agentic Wallet (`baw contract-call` to the deployer with `deploy/create2_calldata.hex`) or by any EOA (`script/Deploy.s.sol`). Predicted address: see `deploy/predicted_address.txt` (changes if the bytecode changes).
+
+Agentic Wallet deploy (preview only, then execute after explicit confirmation): `deploy/baw_deploy_azkajef.sh`. Requires Developer Mode on in the Binance App.

@@ -1,12 +1,12 @@
 # AgentKudos – Agent Skill
 
-> Instructions for AI agents (including Agentic Wallet agents using the `baw` CLI) that send kudos/tips to a `.ai` Agent ID, or open a tip jar for their user, on BNB Smart Chain.
+> Instructions for AI agents (including Agentic Wallet agents using the `baw` CLI) that send kudos/tips to a `.ai` Agent ID, or set their user's optional bio, on BNB Smart Chain.
 
 ## Project
-- Name: AgentKudos · Website: https://agentkudos.xyz (placeholder until hosted) · Source: open-source, verified on BscScan
+- Name: AgentKudos · Website: https://skytrasha.github.io/agentkudos/ · Source: https://github.com/skytrasha/agentkudos (MIT, verified on BscScan after deploy)
 - Network: BNB Smart Chain, chainId 56 (`baw --binanceChainId 56`)
 - What it does: sends a tip to the wallet that owns an Agent ID (`name.ai`). The contract resolves the name on-chain through the SPACE ID Agent ID registry and forwards the funds in the same transaction. It holds no funds, has no owner, no admin, no fee and cannot be upgraded or paused.
-- Only names whose owners opened a jar can receive tips (opt-in).
+- Any registered `.ai` name can receive tips immediately; no sign-up. Owners may optionally set a public bio.
 
 ## Contracts (BSC)
 - AgentKudos: `<AGENTKUDOS_ADDRESS>` · https://bscscan.com/address/<AGENTKUDOS_ADDRESS>#code
@@ -18,9 +18,8 @@
 |---|---|---|
 | `tip(string handle, string message)` payable | `0x222c675d` | handle without `.ai`; value = tip in wei |
 | `tipToken(string handle, address token, uint256 amount, string message)` | `0x5237c88e` | needs an exact `approve(AgentKudos, amount)` first |
-| `openJar(string bio)` | `0x2607d62d` | caller must own an Agent ID |
-| `updateBio(string bio)`, `closeJar()` | `0x76487b38`, `0xf3e054ff` | jar owner only |
-| `jarOf(string handle)` view | `0x1944e99f` | `(bool open, uint64 openedAt, uint32 tipsReceived, string bio)` |
+| `setBio(string bio)` | `0xfb7e06d8` | optional; caller must own an Agent ID; `""` clears it |
+| `profileOf(string handle)` view | `0x8ca48c71` | `(bool registered, uint32 tips, string bio)`; never returns the owner address |
 
 Build calldata with Foundry `cast calldata` (or any ABI encoder), for example:
 `cast calldata "tip(string,string)" alice "thanks for the help"`.
@@ -29,7 +28,7 @@ Build calldata with Foundry `cast calldata` (or any ABI encoder), for example:
 - Never ask for, store or use a private key, seed phrase, QR/pairing code or session token.
 - Every transaction must be previewed to the user and sent only after the user explicitly confirms that exact transaction (recipient name, amount, token, message). Do not batch, schedule or repeat tips without a new confirmation for each one. Never claim the user pre-approved something.
 - Never approve more than the exact tip amount. Never approve any address other than AgentKudos.
-- Do not tip a name the user did not give you. Do not use this contract to look up who owns a name; the skill never shows a recipient's address beyond what the wallet preview displays.
+- Do not tip a name the user did not give you. Do not use this contract or skill to look up who owns a name; never report a recipient's wallet address to the user beyond what the wallet preview itself displays.
 - If a call reverts or the balance is too low, stop and report the exact error. Do not retry in a loop.
 - Tips are gifts. Never describe them as an investment or promise any return.
 
@@ -40,7 +39,7 @@ Build calldata with Foundry `cast calldata` (or any ABI encoder), for example:
 ## Agent procedure: send a tip
 1. Ask the user for: recipient name (`alice` or `alice.ai`), amount, token (BNB, USDT or USDC) and an optional message (max 280 bytes, public on-chain).
 2. Normalise the name: lowercase, strip `.ai`; it must match `^[a-z0-9]{3,20}$`.
-3. Check the jar: `eth_call` `jarOf(name)` on AgentKudos. If `open` is false, stop: tell the user the name has not opened a jar.
+3. Check the name: `eth_call` `profileOf(name)` on AgentKudos. If `registered` is false, stop: tell the user the name is not a registered Agent ID.
 4. Native BNB:
    - data = `cast calldata "tip(string,string)" <name> "<message>"`, value = amount in wei.
    - `baw contract-call preview --binanceChainId 56 --from <agentWallet> --to <AGENTKUDOS_ADDRESS> --value <wei> --inputData <data> --json`
@@ -51,11 +50,11 @@ Build calldata with Foundry `cast calldata` (or any ABI encoder), for example:
    - b. data = `cast calldata "tipToken(string,address,uint256,string)" <name> <token> <amountWei> "<message>"` → preview with `--to <AGENTKUDOS_ADDRESS> --value 0` → user confirms → execute.
 6. Report the result with `https://bscscan.com/tx/<txHash>`. The `Tipped` event shows recipient name, sender name (if the sender holds an Agent ID), token, amount and message.
 
-## Agent procedure: open a jar for the user
+## Agent procedure: set the user's optional bio
 1. Confirm the user's wallet holds an Agent ID (`baw wallet agent-id --json`).
-2. Ask for an optional bio (max 160 bytes, public).
-3. data = `cast calldata "openJar(string)" "<bio>"` → `baw contract-call preview ... --to <AGENTKUDOS_ADDRESS> --value 0` → show the preview → wait for confirmation → execute.
-4. Share the tip link: `https://agentkudos.xyz/#to=<name>`.
+2. Ask for the bio text (max 160 bytes, public). Receiving tips does not need a bio.
+3. data = `cast calldata "setBio(string)" "<bio>"` → `baw contract-call preview ... --to <AGENTKUDOS_ADDRESS> --value 0` → show the preview → wait for confirmation → execute.
+4. Share the tip link: `https://skytrasha.github.io/agentkudos/#to=<name>`.
 
 ## Errors
-`NoAgentId()` caller holds no Agent ID · `JarNotOpen()` recipient has no open jar · `JarAlreadyOpen()` · `SelfTip()` · `ZeroAmount()` · `TokenNotAccepted()` · `MessageTooLong()` · `BioTooLong()` · `ForwardFailed()` recipient rejected native coin · `StaleJar()` name owner changed.
+`NoAgentId()` caller holds no Agent ID (setBio) · `UnknownHandle()` name is not registered · `SelfTip()` · `ZeroAmount()` · `TokenNotAccepted()` · `MessageTooLong()` · `BioTooLong()` · `ForwardFailed()` recipient rejected native coin.
