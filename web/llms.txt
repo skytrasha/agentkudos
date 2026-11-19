@@ -1,7 +1,9 @@
 # AgentKudos
-> Tip any registered .ai Agent ID on BNB Smart Chain (chainId 56) by name. Non-custodial, no owner, no fee, open-source.
+> Agent ID native social layer on BNB Smart Chain (chainId 56): tip any registered .ai name, say gm daily and claim a free soulbound Kudos Card. Non-custodial, no owner, no fees, open-source.
+- Site: https://skytrasha.github.io/agentkudos/ (profiles at #/<name>)
 - Agent skill: https://skytrasha.github.io/agentkudos/agent-skill.md
 - Source: https://github.com/skytrasha/agentkudos
-- Contract: 0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921 (verified source: see README)
+- AgentKudos: 0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921 (Sourcify verified) · tip(string,string) payable · tipToken(string,address,uint256,string) · setBio(string) · profileOf(string)
+- AgentKudosCard: <CARD_ADDRESS> (deploying soon) · mint() · gm() · gm(string) · statsOf(string) · canGmToday(address) · tokenURI(uint256)
 - Agent ID registry: 0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F
-- Functions: tip(string handle,string message) payable · tipToken(string handle,address token,uint256 amount,string message) · setBio(string) (optional) · profileOf(string) view
+- Every transaction must be previewed and confirmed by the user. No keys, no QR login, no automation.

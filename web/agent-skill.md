@@ -1,6 +1,6 @@
 # AgentKudos – Agent Skill
 
-> Instructions for AI agents (including Agentic Wallet agents using the `baw` CLI) that send kudos/tips to a `.ai` Agent ID, or set their user's optional bio, on BNB Smart Chain.
+> Instructions for AI agents (including Agentic Wallet agents using the `baw` CLI) that send kudos/tips to a `.ai` Agent ID, claim the user's free soulbound Kudos Card, say the daily gm, or set the user's optional bio, on BNB Smart Chain.
 
 ## Project
 - Name: AgentKudos · Website: https://skytrasha.github.io/agentkudos/ · Source: https://github.com/skytrasha/agentkudos (MIT)
@@ -10,6 +10,7 @@
 
 ## Contracts (BSC)
 - AgentKudos: `0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921` · https://bscscan.com/address/0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921#code
+- AgentKudosCard (soulbound card + daily gm): `<CARD_ADDRESS>` (deploying soon; until this line shows an address, skip the card and gm procedures)
 - Agent ID registry (read-only for this skill): `0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F`
 - Accepted tokens: native BNB, USDT `0x55d398326f99059fF775485246999027B3197955` (18 decimals), USDC `0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d` (18 decimals)
 
@@ -20,6 +21,16 @@
 | `tipToken(string handle, address token, uint256 amount, string message)` | `0x5237c88e` | needs an exact `approve(AgentKudos, amount)` first |
 | `setBio(string bio)` | `0xfb7e06d8` | optional; caller must own an Agent ID; `""` clears it |
 | `profileOf(string handle)` view | `0x8ca48c71` | `(bool registered, uint32 tips, string bio)`; never returns the owner address |
+
+Card / gm functions (AgentKudosCard):
+| Function | Selector | Notes |
+|---|---|---|
+| `mint()` | `0x1249c58b` | free soulbound card, one per Agent ID, value 0 |
+| `gm()` | `0xc0129d43` | daily check-in, once per UTC day, value 0 |
+| `gm(string to)` | `0xd8686ecb` | daily check-in plus a free gm shout-out to another registered name, value 0 |
+| `statsOf(string handle)` view | `0x10b34f5d` | `(handle, hasCard, lastDay, streak, best, total, shoutsSent, shoutsReceived)` |
+| `canGmToday(address)` view | `0xfeeeaec6` | false if already done today or no Agent ID |
+| `tokenURI(uint256)` view | `0xc87b56dd` | tokenId = `uint256(keccak256(handle))`; on-chain SVG |
 
 Build calldata with Foundry `cast calldata` (or any ABI encoder), for example:
 `cast calldata "tip(string,string)" alice "thanks for the help"`.
@@ -49,6 +60,17 @@ Build calldata with Foundry `cast calldata` (or any ABI encoder), for example:
    - a. data = `cast calldata "approve(address,uint256)" 0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921 <amountWei>` → preview with `--to <token> --value 0` → user confirms → execute → wait for the receipt.
    - b. data = `cast calldata "tipToken(string,address,uint256,string)" <name> <token> <amountWei> "<message>"` → preview with `--to 0x5E1240848EA2fD922Cc75E5819ECd9c6850cE921 --value 0` → user confirms → execute.
 6. Report the result with `https://bscscan.com/tx/<txHash>`. The `Tipped` event shows recipient name, sender name (if the sender holds an Agent ID), token, amount and message.
+
+## Agent procedure: claim the free Kudos Card
+1. Confirm the wallet holds an Agent ID (`baw wallet agent-id --json`) and that `statsOf(handle).hasCard` is false.
+2. Tell the user what it is: a free, soulbound (non-transferable) card showing their gm streak and kudos; gas only; no rewards or value attached.
+3. data = `0x1249c58b` → `baw contract-call preview --binanceChainId 56 --from <agentWallet> --to <CARD_ADDRESS> --value 0 --inputData 0x1249c58b --json` → show the preview → wait for the user's explicit confirmation → `execute`.
+
+## Agent procedure: daily gm
+1. Read `canGmToday(agentWallet)`. If false, tell the user gm is already done today (resets 00:00 UTC) and stop.
+2. Ask whether to shout out a friend's `.ai` (optional). If yes, check `profileOf(name).registered` on AgentKudos.
+3. data = `0xc0129d43` (plain gm) or `cast calldata "gm(string)" <friend>` → preview with `--to <CARD_ADDRESS> --value 0` → show the preview → wait for explicit confirmation → `execute`.
+4. Never schedule or automate gm. Each day's gm needs the user's own confirmation of that day's preview.
 
 ## Agent procedure: set the user's optional bio
 1. Confirm the user's wallet holds an Agent ID (`baw wallet agent-id --json`).
