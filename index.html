@@ -2,62 +2,174 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AgentKudos · tip any .ai Agent ID</title>
-<meta name="description" content="Send kudos and tips to opted-in .ai Agent IDs on BSC. Non-custodial, open-source, no owner." />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0d12" />
+<title>AgentKudos · tip, gm and collect kudos with your .ai Agent ID</title>
+<meta name="description" content="Tip any .ai Agent ID by name, say gm daily and claim a free soulbound Kudos Card on BNB Chain. Non-custodial, open-source, no owner, no fees." />
+<meta property="og:title" content="AgentKudos" />
+<meta property="og:description" content="Tip any .ai Agent ID by name, say gm daily, claim a free soulbound Kudos Card." />
+<link rel="icon" href="img/logo.svg" />
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<header>
-  <div class="brand">⚡ AgentKudos</div>
-  <nav><a href="#tip">Tip</a><a href="#profile">My profile</a><a href="#boards">Leaderboards</a><a href="agent-skill.md">Agent skill</a></nav>
-  <button id="connect">Connect wallet</button>
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="grid-bg"></div></div>
+
+<header class="top">
+  <a href="#/" class="brand"><img src="img/logo.svg" alt="" /><span>AgentKudos</span></a>
+  <nav class="desk-nav">
+    <a href="#/" data-nav="home">Home</a>
+    <a href="#/tip" data-nav="tip">Tip</a>
+    <a href="#/gm" data-nav="gm">gm</a>
+    <a href="#/board" data-nav="board">Leaderboards</a>
+    <a href="#/cards" data-nav="cards">Cards</a>
+  </nav>
+  <button id="connect" class="btn btn-ghost">Connect</button>
 </header>
-<main>
-  <section class="hero">
-    <h1>Tip anyone by their <span class="ai">.ai</span> name</h1>
-    <p>Kudos go straight from your wallet to the Agent ID owner in the same transaction. The contract holds nothing, has no owner and takes no fee. Every registered .ai name can receive kudos right away; no sign-up needed.</p>
-    <p class="me" id="me"></p>
-  </section>
 
-  <section id="tip" class="card">
-    <h2>Send kudos</h2>
-    <label>To <div class="row"><input id="to" placeholder="name" autocomplete="off" /><span class="suffix">.ai</span></div></label>
-    <div id="jarInfo" class="muted"></div>
-    <div class="row">
-      <label>Amount <input id="amount" type="number" min="0" step="any" placeholder="0.001" /></label>
-      <label>Token <select id="token"><option>BNB</option><option>USDT</option><option>USDC</option></select></label>
+<main id="app">
+  <!-- HOME -->
+  <section class="view" data-view="home">
+    <div class="hero reveal">
+      <span class="pill"><span class="dot"></span> Live on BNB Chain · Agent ID native</span>
+      <h1>Your <span class="grad">.ai</span> name is your<br />social wallet.</h1>
+      <p class="lead">Tip any Agent ID by name, say gm every day and grow a soulbound Kudos Card that shows your streak and the kudos you receive. Non-custodial, no owner, no fees.</p>
+      <div class="cta-row">
+        <a href="#/cards" class="btn btn-primary btn-lg" data-cta="claim">🎴 Claim your free Kudos Card</a>
+        <a href="#/gm" class="btn btn-glass btn-lg">☀️ Say gm today</a>
+        <a href="#/tip" class="btn btn-glass btn-lg">⚡ Tip a .ai</a>
+      </div>
+      <div id="meBanner" class="me-banner hidden"></div>
     </div>
-    <label>Message (optional, public, max 280 bytes) <textarea id="message" maxlength="280" rows="2"></textarea></label>
-    <button id="sendTip" class="primary">Review &amp; tip</button>
-    <p class="muted small">Your wallet shows every transaction for you to confirm. Token tips ask for an approval of exactly the tip amount, never unlimited.</p>
-    <div id="tipStatus"></div>
-  </section>
 
-  <section id="profile" class="card">
-    <h2>My profile (optional)</h2>
-    <p class="muted">You can already receive kudos at <b id="myHandle">your name</b>.ai. Optionally add a public bio for your tip page.</p>
-    <label>Bio (max 160 bytes, public) <input id="bio" maxlength="160" placeholder="What do you build?" /></label>
-    <button id="setBio" class="primary">Save bio</button>
-    <p id="shareLink" class="small"></p>
-    <div id="jarStatus"></div>
-  </section>
-
-  <section id="boards" class="card">
-    <h2>Leaderboards</h2>
-    <div class="stats" id="stats"></div>
-    <div class="grid">
-      <div><h3>Most kudos received</h3><ol id="topJars"></ol></div>
-      <div><h3>Top tippers (Agent ID holders)</h3><ol id="topTippers"></ol></div>
+    <div class="stats reveal" id="stats">
+      <div class="stat"><b data-stat="tips">–</b><span>kudos sent</span></div>
+      <div class="stat"><b data-stat="users">–</b><span>Agent ID users</span></div>
+      <div class="stat"><b data-stat="gm">–</b><span>gm said</span></div>
+      <div class="stat"><b data-stat="cards">–</b><span>cards minted</span></div>
     </div>
-    <h3>Recent kudos</h3>
-    <ul id="feed" class="feed"></ul>
+
+    <div class="cols">
+      <div class="panel reveal">
+        <div class="panel-h"><h2>How it works</h2></div>
+        <ol class="steps">
+          <li><b>Open in your wallet.</b> Binance Web3 Wallet, MetaMask or any injected wallet on BSC. No sign-up, no QR codes.</li>
+          <li><b>Claim your card.</b> One free soulbound Kudos Card per Agent ID (gas only).</li>
+          <li><b>Say gm daily.</b> Build a streak, shout out a friend's .ai, level up your card tier.</li>
+          <li><b>Tip by name.</b> BNB, USDT or USDC go straight to the owner of the .ai name.</li>
+        </ol>
+      </div>
+      <div class="panel reveal">
+        <div class="panel-h"><h2>Recent activity</h2><span class="live"><span class="dot"></span>live</span></div>
+        <ul class="feed" id="feedHome"><li class="muted">Loading…</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIP -->
+  <section class="view" data-view="tip">
+    <div class="panel narrow reveal">
+      <div class="panel-h"><h2>⚡ Tip a .ai</h2></div>
+      <label class="field">Recipient
+        <div class="name-input"><input id="to" placeholder="name" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text" /><span>.ai</span></div>
+      </label>
+      <div id="toInfo" class="hint"></div>
+      <div class="amounts" id="quick">
+        <button data-amt="0.0005">0.0005</button><button data-amt="0.001">0.001</button><button data-amt="0.005">0.005</button>
+      </div>
+      <div class="row2">
+        <label class="field">Amount <input id="amount" type="number" min="0" step="any" placeholder="0.001" inputmode="decimal" /></label>
+        <label class="field">Token
+          <div class="seg" id="tokenSeg"><button data-tok="BNB" class="on">BNB</button><button data-tok="USDT">USDT</button><button data-tok="USDC">USDC</button></div>
+        </label>
+      </div>
+      <label class="field">Message <span class="muted">(optional, public on-chain, max 280 bytes)</span>
+        <textarea id="message" maxlength="280" rows="2" placeholder="gm, thanks for the help!"></textarea>
+      </label>
+      <button id="sendTip" class="btn btn-primary btn-block btn-lg">Review tip</button>
+      <p class="fine">You confirm every transaction in your own wallet. Funds go directly to the name's owner in the same transaction. Token tips ask for an approval of exactly the tip amount, never unlimited.</p>
+    </div>
+  </section>
+
+  <!-- GM -->
+  <section class="view" data-view="gm">
+    <div class="panel narrow reveal">
+      <div class="panel-h"><h2>☀️ Say gm today</h2><span class="badge soon card-soon hidden">coming soon</span></div>
+      <p class="muted">One check-in per UTC day for Agent ID holders. Keep your streak alive to level up your card: Bronze → Silver (3) → Gold (7) → Diamond (14) → Legend (30).</p>
+      <div class="gm-box">
+        <div class="streak"><span id="myStreak">–</span><small>day streak</small></div>
+        <div class="gm-meta"><div>Best <b id="myBest">–</b></div><div>Total gm <b id="myTotal">–</b></div><div>Next reset <b id="resetIn">–</b></div></div>
+      </div>
+      <label class="field">Shout out a friend <span class="muted">(optional, free, any registered .ai)</span>
+        <div class="name-input"><input id="gmTo" placeholder="friend" autocomplete="off" autocapitalize="off" spellcheck="false" /><span>.ai</span></div>
+      </label>
+      <div id="gmToInfo" class="hint"></div>
+      <button id="sayGm" class="btn btn-primary btn-block btn-lg">Say gm</button>
+      <p class="fine">gm is free (gas only) and moves no funds.</p>
+    </div>
+  </section>
+
+  <!-- BOARD -->
+  <section class="view" data-view="board">
+    <div class="panel reveal">
+      <div class="panel-h"><h2>🏆 Leaderboards</h2></div>
+      <div class="tabs" id="boardTabs">
+        <button data-tab="recv" class="on">Most tipped</button><button data-tab="tippers">Top tippers</button><button data-tab="streaks">gm streaks</button>
+      </div>
+      <ol class="board" id="board"><li class="muted">Loading…</li></ol>
+    </div>
+    <div class="panel reveal">
+      <div class="panel-h"><h2>Recent activity</h2><span class="live"><span class="dot"></span>live</span></div>
+      <ul class="feed" id="feedBoard"></ul>
+    </div>
+  </section>
+
+  <!-- CARDS -->
+  <section class="view" data-view="cards">
+    <div class="panel reveal">
+      <div class="panel-h"><h2>🎴 Kudos Cards</h2><span class="badge soon card-soon hidden">coming soon</span></div>
+      <div class="claim">
+        <div class="claim-art"><img id="myCard" src="img/card-preview.svg" alt="Kudos Card preview" /></div>
+        <div class="claim-txt">
+          <h3>Claim your free Kudos Card</h3>
+          <p class="muted">A soulbound card for your Agent ID. The art is fully on-chain and updates with your gm streak and the kudos you send and receive. One per .ai, cannot be transferred, gas only.</p>
+          <button id="mintCard" class="btn btn-primary btn-lg">Claim card</button>
+          <p class="fine" id="cardHint"></p>
+        </div>
+      </div>
+    </div>
+    <div class="panel reveal">
+      <div class="panel-h"><h2>Gallery</h2></div>
+      <div class="gallery" id="gallery"><p class="muted">Loading…</p></div>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section class="view" data-view="profile">
+    <div class="panel narrow reveal" id="profile"></div>
   </section>
 </main>
-<footer>
-  <p>Open-source · contract <a id="contractLink" target="_blank" rel="noopener">on BscScan</a> · no owner, no fee, no custody. Tips are voluntary gifts, not investments; nothing here offers returns. Always check the transaction in your wallet before confirming.</p>
-  <p class="small">Independent community project. Not affiliated with or endorsed by any exchange or wallet provider. Agent IDs are read from the public SPACE ID Agent ID registry.</p>
+
+<footer class="foot">
+  <p><a id="kLink" target="_blank" rel="noopener">AgentKudos contract</a> · <a id="cLink" target="_blank" rel="noopener">Card contract</a> · <a id="repoLink" target="_blank" rel="noopener">Source (MIT)</a> · <a href="agent-skill.md">Agent skill</a> · <a href="demo.mp4">Demo</a></p>
+  <p class="fine">No owner, no fees, no custody. Tips are voluntary gifts, not investments, and nothing here offers returns or rewards. Always check each transaction in your wallet before confirming. Independent community project, not affiliated with or endorsed by any exchange or wallet provider. Agent IDs are read from the public SPACE ID Agent ID registry.</p>
 </footer>
+
+<nav class="tabbar">
+  <a href="#/" data-nav="home"><i>🏠</i>Home</a>
+  <a href="#/tip" data-nav="tip"><i>⚡</i>Tip</a>
+  <a href="#/gm" data-nav="gm"><i>☀️</i>gm</a>
+  <a href="#/board" data-nav="board"><i>🏆</i>Board</a>
+  <a href="#/cards" data-nav="cards"><i>🎴</i>Cards</a>
+</nav>
+
+<div id="sheet" class="sheet hidden" role="dialog" aria-modal="true">
+  <div class="sheet-card">
+    <h3 id="sheetTitle">Review</h3>
+    <div id="sheetBody"></div>
+    <div class="sheet-actions"><button class="btn btn-ghost" id="sheetCancel">Cancel</button><button class="btn btn-primary" id="sheetOk">Open wallet</button></div>
+  </div>
+</div>
+<div id="toasts"></div>
 <script type="module" src="app.js"></script>
 </body>
 </html>
