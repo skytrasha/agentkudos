@@ -2,16 +2,14 @@ import { ethers } from "./vendor/ethers.min.js";
 import { CONFIG } from "./config.js";
 
 const ABI = [
-  "function openJar(string bio)",
-  "function updateBio(string bio)",
-  "function closeJar()",
+  "function setBio(string bio)",
   "function tip(string handle, string message) payable",
   "function tipToken(string handle, address token, uint256 amount, string message)",
-  "function jarOf(string handle) view returns (bool open, uint64 openedAt, uint32 tipsReceived, string bio)",
+  "function profileOf(string handle) view returns (bool registered, uint32 tips, string bio)",
   "function totalTips() view returns (uint256)",
-  "function totalJars() view returns (uint256)",
+  "function recipientCount() view returns (uint256)",
   "function tipperCount() view returns (uint256)",
-  "function getJars(uint256 start, uint256 count) view returns ((string handle,bool open,uint32 tipsReceived,uint256 receivedNative,uint256 receivedTokenA,uint256 receivedTokenB)[])",
+  "function getRecipients(uint256 start, uint256 count) view returns ((string handle,uint32 tipsReceived,uint256 receivedNative,uint256 receivedTokenA,uint256 receivedTokenB)[])",
   "function getTippers(uint256 start, uint256 count) view returns ((address tipper,string handle,uint32 tipsSent,uint32 uniqueRecipients,uint256 sentNative,uint256 sentTokenA,uint256 sentTokenB)[])",
   "event Tipped(bytes32 indexed labelhash, address indexed from, address indexed token, address to, uint256 amount, string toHandle, string fromHandle, string message)",
 ];
@@ -63,17 +61,17 @@ window.ethereum?.on?.("accountsChanged", () => location.reload());
 window.ethereum?.on?.("chainChanged", () => location.reload());
 $("connect").onclick = connect;
 
-// ---- recipient lookup (only opted-in jars; never shows the recipient's address)
+// ---- recipient lookup (shows name, tip count and bio only; never the recipient's address)
 let lookupTimer;
 async function lookup() {
   const h = clean($("to").value);
   if (!h) { $("jarInfo").textContent = ""; return; }
   if (!HANDLE_RE.test(h)) { $("jarInfo").textContent = "Names are 3–20 lowercase letters or digits."; return; }
   try {
-    const j = await kudosR.jarOf(h);
-    $("jarInfo").innerHTML = j.open
-      ? `<span class="ok">✓ ${esc(h)}.ai accepts kudos</span> · ${j.tipsReceived} received${j.bio ? ` · “${esc(j.bio)}”` : ""}`
-      : `<span class="err">${esc(h)}.ai has not opened a jar.</span> Ask them to open one here.`;
+    const p = await kudosR.profileOf(h);
+    $("jarInfo").innerHTML = p.registered
+      ? `<span class="ok">✓ ${esc(h)}.ai</span> · ${p.tips} kudos received${p.bio ? ` · “${esc(p.bio)}”` : ""}`
+      : `<span class="err">${esc(h)}.ai is not a registered Agent ID.</span>`;
   } catch (e) { $("jarInfo").textContent = "Could not read the jar (network)."; }
 }
 $("to").addEventListener("input", () => { clearTimeout(lookupTimer); lookupTimer = setTimeout(lookup, 350); });
@@ -90,8 +88,8 @@ async function sendTip() {
     if (new TextEncoder().encode(msg).length > 280) return status("tipStatus", "Message is longer than 280 bytes.", "err");
     const amount = ethers.parseUnits(String($("amount").value || "0"), t.decimals);
     if (amount <= 0n) return status("tipStatus", "Enter an amount.", "err");
-    const j = await kudosR.jarOf(h);
-    if (!j.open) return status("tipStatus", `${esc(h)}.ai has not opened a jar.`, "err");
+    const p = await kudosR.profileOf(h);
+    if (!p.registered) return status("tipStatus", `${esc(h)}.ai is not a registered Agent ID.`, "err");
     if (!confirm(`Send ${$("amount").value} ${sym} to ${h}.ai?\nYour wallet will ask you to confirm.`)) return;
     const kudos = new ethers.Contract(CONFIG.CONTRACT, ABI, signer);
     let tx;
@@ -130,9 +128,7 @@ async function jarAction(fn, label) {
     loadBoards();
   } catch (e) { status("jarStatus", esc(e.shortMessage || e.message), "err"); }
 }
-$("openJar").onclick = () => jarAction((k) => k.openJar($("bio").value), "Open jar");
-$("updateBio").onclick = () => jarAction((k) => k.updateBio($("bio").value), "Update bio");
-$("closeJar").onclick = () => jarAction((k) => k.closeJar(), "Close jar");
+$("setBio").onclick = () => jarAction((k) => k.setBio($("bio").value), "Save bio");
 
 // ---- leaderboards straight from contract storage (no indexer, no server)
 async function loadAll(fn, total) {
@@ -143,12 +139,12 @@ async function loadAll(fn, total) {
 const usdValue = (a, b) => Number(ethers.formatUnits(a + b, 18));
 async function loadBoards() {
   try {
-    const [tt, tj, tc] = await Promise.all([kudosR.totalTips(), kudosR.totalJars(), kudosR.tipperCount()]);
-    $("stats").innerHTML = `<div><b>${tt}</b>kudos sent</div><div><b>${tj}</b>jars opened</div><div><b>${tc}</b>tippers</div>`;
-    const jars = await loadAll((s, c) => kudosR.getJars(s, c), Number(tj));
+    const [tt, tj, tc] = await Promise.all([kudosR.totalTips(), kudosR.recipientCount(), kudosR.tipperCount()]);
+    $("stats").innerHTML = `<div><b>${tt}</b>kudos sent</div><div><b>${tj}</b>names tipped</div><div><b>${tc}</b>tippers</div>`;
+    const jars = await loadAll((s, c) => kudosR.getRecipients(s, c), Number(tj));
     jars.sort((a, b) => Number(b.tipsReceived) - Number(a.tipsReceived));
     $("topJars").innerHTML = jars.slice(0, 15).map((j) =>
-      `<li><a href="#to=${esc(j.handle)}">${esc(j.handle)}.ai</a> · ${j.tipsReceived} kudos · ${fmt(j.receivedNative)} BNB · $${usdValue(j.receivedTokenA, j.receivedTokenB).toFixed(2)}</li>`).join("") || "<li class=muted>No jars yet</li>";
+      `<li><a href="#to=${esc(j.handle)}">${esc(j.handle)}.ai</a> · ${j.tipsReceived} kudos · ${fmt(j.receivedNative)} BNB · $${usdValue(j.receivedTokenA, j.receivedTokenB).toFixed(2)}</li>`).join("") || "<li class=muted>No kudos yet</li>";
     const tippers = (await loadAll((s, c) => kudosR.getTippers(s, c), Number(tc))).filter((t) => t.handle);
     tippers.sort((a, b) => Number(b.uniqueRecipients) - Number(a.uniqueRecipients) || Number(b.tipsSent) - Number(a.tipsSent));
     $("topTippers").innerHTML = tippers.slice(0, 15).map((t) =>
