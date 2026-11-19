@@ -72,7 +72,7 @@ async function lookup() {
     $("jarInfo").innerHTML = p.registered
       ? `<span class="ok">✓ ${esc(h)}.ai</span> · ${p.tips} kudos received${p.bio ? ` · “${esc(p.bio)}”` : ""}`
       : `<span class="err">${esc(h)}.ai is not a registered Agent ID.</span>`;
-  } catch (e) { $("jarInfo").textContent = "Could not read the jar (network)."; }
+  } catch (e) { $("jarInfo").textContent = "Could not read this name (contract not live yet or network issue)."; }
 }
 $("to").addEventListener("input", () => { clearTimeout(lookupTimer); lookupTimer = setTimeout(lookup, 350); });
 
