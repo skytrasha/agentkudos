@@ -49,6 +49,8 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
 const fmt = (v, d = 18) => Number(ethers.formatUnits(v, d)).toLocaleString(undefined, { maximumFractionDigits: 6 });
 const tokenName = (addr) => Object.entries(CONFIG.TOKENS).find(([, t]) => t.address.toLowerCase() === addr.toLowerCase())?.[0] ?? "?";
+const ICONS = { "⚡": "bolt", "☀️": "sun", "📣": "mega", "🎴": "card" };
+const icon = (k) => `<svg class="i" aria-hidden="true"><use href="#i-${ICONS[k] || k}"/></svg>`;
 const hlink = (h) => `<a class="h" href="#/${esc(h)}">${esc(h)}.ai</a>`;
 
 let wallet = { provider: null, signer: null, account: null, handle: "" };
@@ -315,7 +317,7 @@ async function loadFeed() {
 }
 function renderFeed(el, items) {
   el.innerHTML = items.length
-    ? items.map((it) => `<li><div class="ic">${it.ic}</div><div>${it.html}<div class="when">block ${it.b.toLocaleString()} · <a target="_blank" rel="noopener" href="${CONFIG.EXPLORER}/tx/${it.tx}">tx</a></div></div></li>`).join("")
+    ? items.map((it) => `<li><div class="ic">${icon(it.ic)}</div><div>${it.html}<div class="when">block ${it.b.toLocaleString()} · <a target="_blank" rel="noopener" href="${CONFIG.EXPLORER}/tx/${it.tx}">tx</a></div></div></li>`).join("")
     : `<li class="muted">No activity yet. Be the first: <a class="grad" href="#/tip">send a tip</a>${CARD_LIVE ? ' or <a class="grad" href="#/gm">say gm</a>' : ""}.</li>`;
 }
 
@@ -332,7 +334,7 @@ function renderBoard() {
   } else {
     if (!CARD_LIVE) { el.innerHTML = `<li class="muted">gm streaks open soon.</li>`; return; }
     rows = Array.from(cache.gms).sort((a, b) => Number(b.streak) - Number(a.streak) || Number(b.best) - Number(a.best) || Number(b.total) - Number(a.total)).slice(0, 25).map((g) =>
-      `<li><div><div class="nm">${hlink(g.handle)}</div><div class="sub">best ${g.best} · ${g.total} gm${g.hasCard ? " · 🎴" : ""}</div></div><div class="val">${g.streak > 0 ? `${g.streak}🔥` : "0"}<div class="sub">streak</div></div></li>`);
+      `<li><div><div class="nm">${hlink(g.handle)}</div><div class="sub">best ${g.best} · ${g.total} gm${g.hasCard ? " · card holder" : ""}</div></div><div class="val">${g.streak}<div class="sub">streak</div></div></li>`);
   }
   el.innerHTML = rows.join("") || `<li class="muted">No entries yet. Be the first!</li>`;
 }
@@ -340,7 +342,7 @@ function renderBoard() {
 async function loadGallery() {
   const el = $("#gallery");
   if (!CARD_LIVE) {
-    el.innerHTML = ["Bronze", "Silver", "Gold", "Legend"].map((t, i) => `<div><img src="img/card-preview.svg" alt="" style="filter:hue-rotate(${i * 55}deg) saturate(${1 + i * 0.2})" /><div class="cap muted">${t} tier preview</div></div>`).join("");
+    el.innerHTML = ["Bronze", "Silver", "Gold", "Diamond", "Legend"].map((t) => `<div class="g-item"><div class="frame"><img loading="lazy" src="img/tier-${t.toLowerCase()}.svg" alt="${t} tier card preview" /></div><div class="cap">${t}<small>tier preview</small></div></div>`).join("");
     return;
   }
   const n = Number(await cardR.totalSupply());
@@ -348,7 +350,7 @@ async function loadGallery() {
   const start = Math.max(0, n - 24);
   const handles = [...(await cardR.getCards(start, 24))].reverse();
   const uris = await Promise.all(handles.map((h) => cardR.tokenURI(BigInt(ethers.id(h))).catch(() => null)));
-  el.innerHTML = handles.map((h, i) => { const d = uris[i] && svgFromURI(uris[i]); return d ? `<a href="#/${esc(h)}"><img loading="lazy" src="${d.image}" alt="${esc(h)}.ai card" /><div class="cap">${esc(h)}.ai</div></a>` : ""; }).join("");
+  el.innerHTML = handles.map((h, i) => { const d = uris[i] && svgFromURI(uris[i]); return d ? `<a class="g-item" href="#/${esc(h)}"><div class="frame"><img loading="lazy" src="${d.image}" alt="${esc(h)}.ai card" /></div><div class="cap">${esc(h)}.ai</div></a>` : ""; }).join("");
 }
 
 // ---------------------------------------------------------------- profile #/handle
@@ -366,16 +368,16 @@ async function renderProfile(h) {
     let gmHtml = "", cardImg = "";
     if (CARD_LIVE) {
       const s = await cardR.statsOf(h).catch(() => null);
-      gmHtml = `<div><b>${s ? s.streak : 0}🔥</b><span>gm streak</span></div>`;
-      if (s?.hasCard) { const u = await cardR.tokenURI(BigInt(label)).catch(() => null); const d = u && svgFromURI(u); if (d) cardImg = `<div class="claim-art" style="margin:1rem 0"><img src="${d.image}" alt="${esc(h)}.ai card" /></div>`; }
+      gmHtml = `<div><b>${s ? s.streak : 0}</b><span>gm streak</span></div>`;
+      if (s?.hasCard) { const u = await cardR.tokenURI(BigInt(label)).catch(() => null); const d = u && svgFromURI(u); if (d) cardImg = `<div class="claim-art" style="margin:1.4rem 0"><div class="halo"></div><div class="frame tilt"><img src="${d.image}" alt="${esc(h)}.ai card" /></div></div>`; }
     } else gmHtml = `<div><b>soon</b><span>gm streak</span></div>`;
     const activity = cache.feed.filter((it) => it.from === h || it.to === h).slice(0, 10);
     el.innerHTML = `
-      <div class="prof-h"><div class="avatar">${esc(h[0].toUpperCase())}</div><div><h2>${esc(h)}<span class="grad">.ai</span></h2><div class="muted">${p.bio ? esc(p.bio) : "Agent ID on BNB Chain"}</div></div></div>
+      <div class="prof-h"><div class="avatar">${esc(h[0].toUpperCase())}</div><div><h2>${esc(h)}<span class="grad">.ai</span></h2><div class="muted">${p.bio ? esc(p.bio) : "Agent ID on BSC"}</div></div></div>
       <div class="prof-stats"><div><b>${p.tips}</b><span>kudos received</span></div><div><b>${sent ? sent.tipsSent : 0}</b><span>kudos sent</span></div>${gmHtml}</div>
       <div class="muted" style="font-size:.88rem">Received: ${fmt(rb)} BNB · ${fmt(ru)} USDT · ${fmt(rc)} USDC</div>
       ${cardImg}
-      <div class="prof-actions" style="margin-top:1rem"><a class="btn btn-primary" href="#/tip" data-prefill="${esc(h)}">⚡ Tip ${esc(h)}.ai</a><a class="btn btn-glass" href="#/gm" data-gmprefill="${esc(h)}">📣 Send gm</a></div>
+      <div class="prof-actions" style="margin-top:1rem"><a class="btn btn-primary" href="#/tip" data-prefill="${esc(h)}">${icon("bolt")} Tip ${esc(h)}.ai</a><a class="btn btn-glass" href="#/gm" data-gmprefill="${esc(h)}">${icon("mega")} Send gm</a></div>
       <h3 style="margin:1.4rem 0 .4rem">Recent activity</h3><ul class="feed" id="profFeed"></ul>
       <p class="fine">Share: ${esc(location.origin + location.pathname)}#/${esc(h)}</p>`;
     renderFeed($("#profFeed"), activity);

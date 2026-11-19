@@ -3,20 +3,38 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#0b0d12" />
+<meta name="theme-color" content="#0a0907" />
 <title>AgentKudos · tip, gm and collect kudos with your .ai Agent ID</title>
-<meta name="description" content="Tip any .ai Agent ID by name, say gm daily and claim a free soulbound Kudos Card on BNB Chain. Non-custodial, open-source, no owner, no fees." />
+<meta name="description" content="Tip any .ai Agent ID by name, say gm daily and claim a free soulbound Kudos Card on BSC. Non-custodial, open-source, no owner, no fees." />
 <meta property="og:title" content="AgentKudos" />
 <meta property="og:description" content="Tip any .ai Agent ID by name, say gm daily, claim a free soulbound Kudos Card." />
 <link rel="icon" href="img/logo.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" />
 <link rel="stylesheet" href="style.css" />
+<script>document.documentElement.classList.add("js")</script>
 </head>
 <body>
-<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="grid-bg"></div></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="goldg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e3b4"/><stop offset=".55" stop-color="#d4af6a"/><stop offset="1" stop-color="#a8823f"/></linearGradient>
+  </defs>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 10.5 12 4l8.5 6.5V20a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></symbol>
+  <symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 7.5l4.5 4L12 5l4.5 6.5L21 7.5 19.2 18H4.8zM5 21h14"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="5" y="2.8" width="14" height="18.4" rx="2.6"/><path d="M12 7.2c.5 2.6 1.9 4 4.5 4.5-2.6.5-4 1.9-4.5 4.5-.5-2.6-1.9-4-4.5-4.5 2.6-.5 4-1.9 4.5-4.5z"/></symbol>
+  <symbol id="i-mega" viewBox="0 0 24 24"><path d="M3.5 10v4a1 1 0 0 0 1 1H7l9 4.5v-15L7 9H4.5a1 1 0 0 0-1 1zM19 9.5a3.5 3.5 0 0 1 0 5M8 15l1.2 5"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2.5c.8 5.1 4.4 8.7 9.5 9.5-5.1.8-8.7 4.4-9.5 9.5-.8-5.1-4.4-8.7-9.5-9.5 5.1-.8 8.7-4.4 9.5-9.5z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+
+<div class="bg" aria-hidden="true"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div><div class="lines"></div><div class="grain"></div></div>
 
 <header class="top">
-  <a href="#/" class="brand"><img src="img/logo.svg" alt="" /><span>AgentKudos</span></a>
-  <nav class="desk-nav">
+  <a href="#/" class="brand"><img src="img/logo.svg" alt="" width="32" height="32" /><span>Agent<em>Kudos</em></span></a>
+  <nav class="desk-nav" aria-label="Main">
     <a href="#/" data-nav="home">Home</a>
     <a href="#/tip" data-nav="tip">Tip</a>
     <a href="#/gm" data-nav="gm">gm</a>
@@ -29,16 +47,28 @@
 <main id="app">
   <!-- HOME -->
   <section class="view" data-view="home">
-    <div class="hero reveal">
-      <span class="pill"><span class="dot"></span> Live on BNB Chain · Agent ID native</span>
-      <h1>Your <span class="grad">.ai</span> name is your<br />social wallet.</h1>
-      <p class="lead">Tip any Agent ID by name, say gm every day and grow a soulbound Kudos Card that shows your streak and the kudos you receive. Non-custodial, no owner, no fees.</p>
-      <div class="cta-row">
-        <a href="#/cards" class="btn btn-primary btn-lg" data-cta="claim">🎴 Claim your free Kudos Card</a>
-        <a href="#/gm" class="btn btn-glass btn-lg">☀️ Say gm today</a>
-        <a href="#/tip" class="btn btn-glass btn-lg">⚡ Tip a .ai</a>
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="pill reveal"><span class="dot"></span> Live on BSC <i class="sep"></i> Agent ID native</span>
+        <h1 class="reveal">Your <em class="gold">.ai</em> name,<br />your social wallet.</h1>
+        <p class="lead reveal">Tip any Agent ID by name, say gm every day and grow a soulbound Kudos Card that carries your streak and the kudos you receive. Non-custodial, no owner, no fees.</p>
+        <div class="cta-row reveal">
+          <a href="#/cards" class="btn btn-primary btn-lg" data-cta="claim"><svg class="i"><use href="#i-card"/></svg>Claim your free Kudos Card</a>
+          <div class="cta-sub">
+            <a href="#/gm" class="btn btn-glass btn-lg"><svg class="i"><use href="#i-sun"/></svg>Say gm today</a>
+            <a href="#/tip" class="btn btn-glass btn-lg"><svg class="i"><use href="#i-bolt"/></svg>Tip a .ai</a>
+          </div>
+        </div>
+        <div id="meBanner" class="me-banner hidden"></div>
       </div>
-      <div id="meBanner" class="me-banner hidden"></div>
+      <div class="hero-art reveal" aria-hidden="true">
+        <div class="halo"></div>
+        <div class="stack">
+          <div class="frame f-back"><img src="img/tier-diamond.svg" alt="" /></div>
+          <div class="frame f-mid"><img src="img/tier-legend.svg" alt="" /></div>
+          <div class="frame f-front tilt"><img src="img/tier-gold.svg" alt="" /></div>
+        </div>
+      </div>
     </div>
 
     <div class="stats reveal" id="stats">
@@ -48,18 +78,20 @@
       <div class="stat"><b data-stat="cards">–</b><span>cards minted</span></div>
     </div>
 
+    <div class="ornament reveal" aria-hidden="true"><span></span><svg class="i"><use href="#i-spark"/></svg><span></span></div>
+
     <div class="cols">
       <div class="panel reveal">
-        <div class="panel-h"><h2>How it works</h2></div>
+        <div class="panel-h"><div><span class="eyebrow">The ritual</span><h2>How it works</h2></div></div>
         <ol class="steps">
-          <li><b>Open in your wallet.</b> Binance Web3 Wallet, MetaMask or any injected wallet on BSC. No sign-up, no QR codes.</li>
+          <li><b>Open in your wallet.</b> MetaMask or any injected wallet app on BSC. No sign-up, no QR codes.</li>
           <li><b>Claim your card.</b> One free soulbound Kudos Card per Agent ID (gas only).</li>
-          <li><b>Say gm daily.</b> Build a streak, shout out a friend's .ai, level up your card tier.</li>
+          <li><b>Say gm daily.</b> Build a streak, shout out a friend's .ai, rise through the card tiers.</li>
           <li><b>Tip by name.</b> BNB, USDT or USDC go straight to the owner of the .ai name.</li>
         </ol>
       </div>
       <div class="panel reveal">
-        <div class="panel-h"><h2>Recent activity</h2><span class="live"><span class="dot"></span>live</span></div>
+        <div class="panel-h"><div><span class="eyebrow">On-chain</span><h2>Recent activity</h2></div><span class="live"><span class="dot"></span>live</span></div>
         <ul class="feed" id="feedHome"><li class="muted">Loading…</li></ul>
       </div>
     </div>
@@ -68,7 +100,7 @@
   <!-- TIP -->
   <section class="view" data-view="tip">
     <div class="panel narrow reveal">
-      <div class="panel-h"><h2>⚡ Tip a .ai</h2></div>
+      <div class="panel-h"><div><span class="eyebrow">Send kudos</span><h2>Tip a <em class="gold">.ai</em></h2></div><svg class="i i-lg"><use href="#i-bolt"/></svg></div>
       <label class="field">Recipient
         <div class="name-input"><input id="to" placeholder="name" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text" /><span>.ai</span></div>
       </label>
@@ -93,8 +125,11 @@
   <!-- GM -->
   <section class="view" data-view="gm">
     <div class="panel narrow reveal">
-      <div class="panel-h"><h2>☀️ Say gm today</h2><span class="badge soon card-soon hidden">coming soon</span></div>
-      <p class="muted">One check-in per UTC day for Agent ID holders. Keep your streak alive to level up your card: Bronze → Silver (3) → Gold (7) → Diamond (14) → Legend (30).</p>
+      <div class="panel-h"><div><span class="eyebrow">Daily check-in</span><h2>Say gm today</h2></div><span class="badge soon card-soon hidden">coming soon</span></div>
+      <p class="muted">One check-in per UTC day for Agent ID holders. Keep your streak alive to rise through the card tiers.</p>
+      <div class="tier-row" aria-label="Card tiers">
+        <span class="t t-bronze">Bronze<small>1</small></span><span class="t t-silver">Silver<small>3</small></span><span class="t t-gold">Gold<small>7</small></span><span class="t t-diamond">Diamond<small>14</small></span><span class="t t-legend">Legend<small>30</small></span>
+      </div>
       <div class="gm-box">
         <div class="streak"><span id="myStreak">–</span><small>day streak</small></div>
         <div class="gm-meta"><div>Best <b id="myBest">–</b></div><div>Total gm <b id="myTotal">–</b></div><div>Next reset <b id="resetIn">–</b></div></div>
@@ -110,35 +145,40 @@
 
   <!-- BOARD -->
   <section class="view" data-view="board">
-    <div class="panel reveal">
-      <div class="panel-h"><h2>🏆 Leaderboards</h2></div>
-      <div class="tabs" id="boardTabs">
-        <button data-tab="recv" class="on">Most tipped</button><button data-tab="tippers">Top tippers</button><button data-tab="streaks">gm streaks</button>
+    <div class="board-wrap">
+      <div class="panel reveal">
+        <div class="panel-h"><div><span class="eyebrow">Hall of fame</span><h2>Leaderboards</h2></div><svg class="i i-lg"><use href="#i-crown"/></svg></div>
+        <div class="tabs" id="boardTabs">
+          <button data-tab="recv" class="on">Most tipped</button><button data-tab="tippers">Top tippers</button><button data-tab="streaks">gm streaks</button>
+        </div>
+        <ol class="board" id="board"><li class="muted">Loading…</li></ol>
       </div>
-      <ol class="board" id="board"><li class="muted">Loading…</li></ol>
-    </div>
-    <div class="panel reveal">
-      <div class="panel-h"><h2>Recent activity</h2><span class="live"><span class="dot"></span>live</span></div>
-      <ul class="feed" id="feedBoard"></ul>
+      <div class="panel reveal">
+        <div class="panel-h"><div><span class="eyebrow">On-chain</span><h2>Recent activity</h2></div><span class="live"><span class="dot"></span>live</span></div>
+        <ul class="feed" id="feedBoard"></ul>
+      </div>
     </div>
   </section>
 
   <!-- CARDS -->
   <section class="view" data-view="cards">
     <div class="panel reveal">
-      <div class="panel-h"><h2>🎴 Kudos Cards</h2><span class="badge soon card-soon hidden">coming soon</span></div>
+      <div class="panel-h"><div><span class="eyebrow">Soulbound collectible</span><h2>Kudos Cards</h2></div><span class="badge soon card-soon hidden">coming soon</span></div>
       <div class="claim">
-        <div class="claim-art"><img id="myCard" src="img/card-preview.svg" alt="Kudos Card preview" /></div>
+        <div class="claim-art"><div class="halo"></div><div class="frame tilt"><img id="myCard" src="img/card-preview.svg" alt="Kudos Card preview" /></div></div>
         <div class="claim-txt">
-          <h3>Claim your free Kudos Card</h3>
+          <h3>Claim your free <em class="gold">Kudos Card</em></h3>
           <p class="muted">A soulbound card for your Agent ID. The art is fully on-chain and updates with your gm streak and the kudos you send and receive. One per .ai, cannot be transferred, gas only.</p>
+          <div class="tier-row" aria-label="Card tiers">
+            <span class="t t-bronze">Bronze<small>1</small></span><span class="t t-silver">Silver<small>3</small></span><span class="t t-gold">Gold<small>7</small></span><span class="t t-diamond">Diamond<small>14</small></span><span class="t t-legend">Legend<small>30</small></span>
+          </div>
           <button id="mintCard" class="btn btn-primary btn-lg">Claim card</button>
           <p class="fine" id="cardHint"></p>
         </div>
       </div>
     </div>
     <div class="panel reveal">
-      <div class="panel-h"><h2>Gallery</h2></div>
+      <div class="panel-h"><div><span class="eyebrow">The collection</span><h2>Gallery</h2></div></div>
       <div class="gallery" id="gallery"><p class="muted">Loading…</p></div>
     </div>
   </section>
@@ -150,26 +190,30 @@
 </main>
 
 <footer class="foot">
-  <p><a id="kLink" target="_blank" rel="noopener">AgentKudos contract</a> · <a id="cLink" target="_blank" rel="noopener">Card contract</a> · <a id="repoLink" target="_blank" rel="noopener">Source (MIT)</a> · <a href="agent-skill.md">Agent skill</a> · <a href="demo.mp4">Demo</a></p>
-  <p class="fine">No owner, no fees, no custody. Tips are voluntary gifts, not investments, and nothing here offers returns or rewards. Always check each transaction in your wallet before confirming. Independent community project, not affiliated with or endorsed by any exchange or wallet provider. Agent IDs are read from the public SPACE ID Agent ID registry.</p>
+  <div class="foot-in">
+    <div class="foot-brand"><img src="img/logo.svg" alt="" width="40" height="40" /><div><b>Agent<em>Kudos</em></b><span>Kudos, gm and soulbound cards for .ai Agent IDs.</span></div></div>
+    <p class="foot-links"><a id="kLink" target="_blank" rel="noopener">AgentKudos contract</a><a id="cLink" target="_blank" rel="noopener">Card contract</a><a id="repoLink" target="_blank" rel="noopener">Source (MIT)</a><a href="agent-skill.md">Agent skill</a><a href="demo.mp4">Demo</a></p>
+    <p class="fine">No owner, no fees, no custody. Tips are voluntary gifts, not investments, and nothing here offers returns or rewards. Always check each transaction in your wallet before confirming. Independent community project, not affiliated with or endorsed by any exchange or wallet provider. Agent IDs are read from the public SPACE ID Agent ID registry.</p>
+  </div>
 </footer>
 
-<nav class="tabbar">
-  <a href="#/" data-nav="home"><i>🏠</i>Home</a>
-  <a href="#/tip" data-nav="tip"><i>⚡</i>Tip</a>
-  <a href="#/gm" data-nav="gm"><i>☀️</i>gm</a>
-  <a href="#/board" data-nav="board"><i>🏆</i>Board</a>
-  <a href="#/cards" data-nav="cards"><i>🎴</i>Cards</a>
+<nav class="tabbar" aria-label="Main">
+  <a href="#/" data-nav="home"><svg class="i"><use href="#i-home"/></svg>Home</a>
+  <a href="#/tip" data-nav="tip"><svg class="i"><use href="#i-bolt"/></svg>Tip</a>
+  <a href="#/gm" data-nav="gm"><svg class="i"><use href="#i-sun"/></svg>gm</a>
+  <a href="#/board" data-nav="board"><svg class="i"><use href="#i-crown"/></svg>Board</a>
+  <a href="#/cards" data-nav="cards"><svg class="i"><use href="#i-card"/></svg>Cards</a>
 </nav>
 
-<div id="sheet" class="sheet hidden" role="dialog" aria-modal="true">
+<div id="sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <div class="sheet-card">
     <h3 id="sheetTitle">Review</h3>
     <div id="sheetBody"></div>
     <div class="sheet-actions"><button class="btn btn-ghost" id="sheetCancel">Cancel</button><button class="btn btn-primary" id="sheetOk">Open wallet</button></div>
   </div>
 </div>
-<div id="toasts"></div>
+<div id="toasts" aria-live="polite"></div>
 <script type="module" src="app.js"></script>
+<script src="luxe.js" defer></script>
 </body>
 </html>
